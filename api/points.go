@@ -52,24 +52,24 @@ func (p PointI) Add(v VecI) PointI {
 // Offset4By returns the Von Neumann neighborhood (or 4-neighborhood) of p.
 func (p PointI) Offset4By(by int32) [4]PointI {
 	return [...]PointI{
-		PointI{p.X, p.Y - by},
-		PointI{p.X + by, p.Y},
-		PointI{p.X, p.Y + by},
-		PointI{p.X - by, p.Y},
+		{p.X, p.Y - by},
+		{p.X + by, p.Y},
+		{p.X, p.Y + by},
+		{p.X - by, p.Y},
 	}
 }
 
 // Offset8By returns the Moore neighborhood (or 8-neighborhood) of p.
 func (p PointI) Offset8By(by int32) [8]PointI {
 	return [...]PointI{
-		PointI{p.X, p.Y - by},
-		PointI{p.X + by, p.Y - by},
-		PointI{p.X + by, p.Y},
-		PointI{p.X + by, p.Y + by},
-		PointI{p.X, p.Y + by},
-		PointI{p.X - by, p.Y + by},
-		PointI{p.X - by, p.Y},
-		PointI{p.X - by, p.Y - by},
+		{p.X, p.Y - by},
+		{p.X + by, p.Y - by},
+		{p.X + by, p.Y},
+		{p.X + by, p.Y + by},
+		{p.X, p.Y + by},
+		{p.X - by, p.Y + by},
+		{p.X - by, p.Y},
+		{p.X - by, p.Y - by},
 	}
 }
 
@@ -123,24 +123,24 @@ func (p Point2D) Add(v Vec2D) Point2D {
 // Offset4By returns the Von Neumann neighborhood (or 4-neighborhood) of p.
 func (p Point2D) Offset4By(by float32) [4]Point2D {
 	return [...]Point2D{
-		Point2D{p.X, p.Y - by},
-		Point2D{p.X + by, p.Y},
-		Point2D{p.X, p.Y + by},
-		Point2D{p.X - by, p.Y},
+		{p.X, p.Y - by},
+		{p.X + by, p.Y},
+		{p.X, p.Y + by},
+		{p.X - by, p.Y},
 	}
 }
 
 // Offset8By returns the Moore neighborhood (or 8-neighborhood) of p.
 func (p Point2D) Offset8By(by float32) [8]Point2D {
 	return [...]Point2D{
-		Point2D{p.X, p.Y - by},
-		Point2D{p.X + by, p.Y - by},
-		Point2D{p.X + by, p.Y},
-		Point2D{p.X + by, p.Y + by},
-		Point2D{p.X, p.Y + by},
-		Point2D{p.X - by, p.Y + by},
-		Point2D{p.X - by, p.Y},
-		Point2D{p.X - by, p.Y - by},
+		{p.X, p.Y - by},
+		{p.X + by, p.Y - by},
+		{p.X + by, p.Y},
+		{p.X + by, p.Y + by},
+		{p.X, p.Y + by},
+		{p.X - by, p.Y + by},
+		{p.X - by, p.Y},
+		{p.X - by, p.Y - by},
 	}
 }
 

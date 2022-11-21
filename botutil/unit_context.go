@@ -60,7 +60,7 @@ func NewUnitContext(info client.AgentInfo, bot *Bot) *UnitContext {
 		Neutral: neutral{},
 		bot:     bot,
 	}
-	ctx.dummy = Units{raw: []Unit{Unit{ctx: ctx}}}
+	ctx.dummy = Units{raw: []Unit{{ctx: ctx}}}
 	update := func() { ctx.update(info) }
 	update()
 	info.OnAfterStep(update)

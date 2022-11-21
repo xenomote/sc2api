@@ -39,7 +39,7 @@ func (v VecI) Len2() int32 {
 
 // Len computes the length (magnitude) of the vector.
 func (v VecI) Len() float32 {
-	return float32(v.Len())
+	return float32(v.Len64())
 }
 
 // Len64 computes the length (magnitude) of the vector.

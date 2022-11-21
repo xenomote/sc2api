@@ -10,7 +10,8 @@ import (
 // Player ...
 type Player struct {
 	api.PlayerCommon
-	api.PlayerInfo
+	api.PlayerInfo 
+	// TODO player struct copies player_id tag
 
 	OpponentID   api.PlayerID
 	OpponentRace api.Race

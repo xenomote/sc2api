@@ -104,9 +104,8 @@ func NewPlacementGrid(bot *botutil.Bot) *PlacementGrid {
 	update()
 
 	var req []*api.RequestQueryBuildingPlacement
-	var lut []api.UnitTypeID
 
-	for k, v := range pg.structures {
+	for _, v := range pg.structures {
 		xMin, yMin := int32(v.point.X-float32(v.size.X)/2), int32(v.point.Y-float32(v.size.Y)/2)
 		xMax, yMax := xMin+v.size.X, yMin+v.size.Y
 		for y := yMin; y < yMax; y++ {
@@ -116,7 +115,6 @@ func NewPlacementGrid(bot *botutil.Bot) *PlacementGrid {
 						AbilityId: ability.Build_SensorTower,
 						TargetPos: &api.Point2D{X: float32(x) + 0.5, Y: float32(y) + 0.5},
 					})
-					lut = append(lut, bot.UnitByTag(k).UnitType)
 				}
 			}
 		}
@@ -196,14 +194,14 @@ func (pg *PlacementGrid) DebugPrint(bot *botutil.Bot) {
 	}
 
 	bot.SendDebugCommands([]*api.DebugCommand{
-		&api.DebugCommand{
+		{
 			Command: &api.DebugCommand_Draw{
 				Draw: &api.DebugDraw{
 					Boxes: boxes,
 				},
 			},
 		},
-		&api.DebugCommand{
+		{
 			Command: &api.DebugCommand_Draw{
 				Draw: &api.DebugDraw{
 					Boxes: queryBoxes,

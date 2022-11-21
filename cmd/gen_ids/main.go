@@ -200,16 +200,20 @@ func dumpVersion(ping api.ResponsePing) {
 }
 
 func makeID(id string) string {
-	id = strings.Replace(id, " ", "_", -1)
-	for _, c := range id {
-		if !unicode.IsLetter(c) {
-			return "A_" + id
-		}
-		if unicode.IsLower(c) {
-			return string(unicode.ToUpper(c)) + id[1:]
-		}
-		break
+	id = strings.ReplaceAll(id, " ", "_")
+
+	if len(id) == 0 {
+		return id
 	}
+	c := []rune(id)[0]
+
+	if !unicode.IsLetter(c) {
+		return "A_" + id
+	}
+	if unicode.IsLower(c) {
+		return string(unicode.ToUpper(c)) + id[1:]
+	}
+
 	return id
 }
 

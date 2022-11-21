@@ -99,10 +99,7 @@ func defaultExecutable() string {
 }
 
 func hasProcessPath() bool {
-	if len(processPath) == 0 {
-		return false
-	}
-	return true
+	return len(processPath) != 0
 }
 
 func processPathForBuild(build uint32) string {

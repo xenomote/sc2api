@@ -42,7 +42,7 @@ func (f *raceFlag) Set(value string) error {
 		*f = raceFlag(v)
 		return nil
 	}
-	return fmt.Errorf("Unknown race: %v", value)
+	return fmt.Errorf("unknown race: %v", value)
 }
 
 func (f *raceFlag) String() string {
@@ -59,7 +59,7 @@ func (f *difficultyFlag) Set(value string) error {
 		*f = difficultyFlag(v)
 		return nil
 	}
-	return fmt.Errorf("Unknown difficulty: %v", value)
+	return fmt.Errorf("unknown difficulty: %v", value)
 }
 
 func (f *difficultyFlag) String() string {
@@ -76,7 +76,7 @@ func (f *buildFlag) Set(value string) error {
 		*f = buildFlag(v)
 		return nil
 	}
-	return fmt.Errorf("Unknown build: %v", value)
+	return fmt.Errorf("unknown build: %v", value)
 }
 
 func (f *buildFlag) String() string {

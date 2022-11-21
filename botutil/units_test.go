@@ -125,9 +125,6 @@ func BenchmarkUnitsByTypesStep(b *testing.B) {
 
 type apiUnitsByTypes map[api.UnitTypeID][]*api.Unit
 
-type myUnit struct{ api.Unit }
-type myUnitsByTypes map[api.UnitTypeID][]*myUnit
-
 type unitsByTypes apiUnitsByTypes
 
 //type unitsByTypes myUnitsByTypes

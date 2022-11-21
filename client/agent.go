@@ -178,7 +178,7 @@ func (c *Client) ClearDebugDraw() {
 	c.lastDraw = nil
 
 	c.SendDebugCommands([]*api.DebugCommand{
-		&api.DebugCommand{
+		{
 			Command: &api.DebugCommand_Draw{
 				Draw: &api.DebugDraw{},
 			},

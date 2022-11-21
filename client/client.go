@@ -70,7 +70,7 @@ func (c *Client) Connect(address string, port int, timeout time.Duration) error 
 	fmt.Println()
 
 	if !connected {
-		return fmt.Errorf("Unable to connect to game")
+		return fmt.Errorf("unable to connect to game")
 	}
 
 	log.Printf("Connected to %v:%v", address, port)
@@ -340,7 +340,7 @@ func (c *Client) reportPerf() {
 		Command: &api.DebugCommand_Draw{
 			Draw: &api.DebugDraw{
 				Text: []*api.DebugText{
-					&api.DebugText{
+					{
 						Color:      &api.Color{R: 255, G: 255, B: 255},
 						Text:       text,
 						VirtualPos: &api.Point{X: 0, Y: 0, Z: 0},

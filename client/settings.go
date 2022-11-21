@@ -59,10 +59,6 @@ type Ports struct {
 	SharedPort  int32
 }
 
-func newPorts() Ports {
-	return Ports{&api.PortSet{GamePort: -1, BasePort: -1}, []*api.PortSet{}, -1}
-}
-
 func (p Ports) isValid() bool {
 	if p.SharedPort < 1 || !portSetIsValid(p.ServerPorts) || len(p.ClientPorts) < 1 {
 		return false

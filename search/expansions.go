@@ -171,14 +171,14 @@ func debugPrintBaseLocs(locs []BaseLocation, placement api.ImageDataBytes, bot c
 	}
 
 	bot.SendDebugCommands([]*api.DebugCommand{
-		&api.DebugCommand{
+		{
 			Command: &api.DebugCommand_Draw{
 				Draw: &api.DebugDraw{
 					Boxes: boxes,
 				},
 			},
 		},
-		&api.DebugCommand{
+		{
 			Command: &api.DebugCommand_GameState{
 				GameState: api.DebugGameState_show_map,
 			},

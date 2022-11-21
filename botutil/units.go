@@ -91,11 +91,6 @@ func (units Units) Slice() []Unit {
 	return units.Cache().raw
 }
 
-func (units *Units) append(u Unit) {
-	units.ensureOwns(1)
-	units.raw = append(units.raw, u)
-}
-
 func (units *Units) concat(other *Units) {
 	if len(units.raw) == 0 {
 		*units = *other

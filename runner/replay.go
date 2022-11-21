@@ -10,7 +10,6 @@ import (
 )
 
 var (
-	replayDir            = ""
 	replayFiles          = []string(nil)
 	replayFilter         = (func(info *api.ResponseReplayInfo) bool)(nil)
 	replayObservedPlayer = api.PlayerID(1)
@@ -30,9 +29,7 @@ func SetReplayPath(path string) error {
 		replayFiles = []string{path}
 		return nil
 	}
-
-	replayDir = path
-
+	
 	// Gather and append all files from the directory.
 	files, err := ioutil.ReadDir(path)
 	if err != nil {

@@ -183,14 +183,6 @@ func (bot *bot) strategy() {
 		}
 	}
 
-	// Units
-	if bot.Self.CountAll(terran.SCV) < 18 {
-		if !bot.BuildUnit(terran.OrbitalCommand, ability.Train_SCV) &&
-			!bot.BuildUnit(terran.CommandCenter, ability.Train_SCV) &&
-			!bot.BuildUnit(terran.PlanetaryFortress, ability.Train_SCV) {
-			// do nothing
-		}
-	}
 	bot.BuildUnits(terran.Barracks, ability.Train_Reaper, 10)
 }
 

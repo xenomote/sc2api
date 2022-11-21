@@ -5,28 +5,8 @@ import (
 )
 
 func sortUnits(data *[]*api.Unit) {
-	//sort.Sort((*sorter)(data))
 	quickSort(*data, maxDepth(len(*data)))
-
-	// check sort
-	// prev := data[0].UnitType
-	// for _, uu := range data {
-	// 	if uu.UnitType < prev {
-	// 		panic("not sorted!")
-	// 	}
-	// 	prev = uu.UnitType
-	// }
 }
-
-// Generic sort.Interface wrapper
-
-type sorter []*api.Unit
-
-func (s *sorter) Len() int           { return len(*s) }
-func (s *sorter) Swap(i, j int)      { (*s)[i], (*s)[j] = (*s)[j], (*s)[i] }
-func (s *sorter) Less(i, j int) bool { return (*s)[i].UnitType < (*s)[j].UnitType }
-
-// Type-specialized version of sort.Sort
 
 func maxDepth(n int) int {
 	var depth int
