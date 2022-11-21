@@ -1,8 +1,8 @@
 package botutil
 
 import (
-	"github.com/chippydip/go-sc2ai/api"
-	"github.com/chippydip/go-sc2ai/enums/unit"
+	"github.com/xenomote/sc2api/api"
+	"github.com/xenomote/sc2api/enums/unit"
 )
 
 // IsType ...

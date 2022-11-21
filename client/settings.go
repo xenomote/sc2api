@@ -1,7 +1,7 @@
 package client
 
 import (
-	"github.com/chippydip/go-sc2ai/api"
+	"github.com/xenomote/sc2api/api"
 )
 
 // ProcessInfo ...

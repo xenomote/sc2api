@@ -6,7 +6,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/chippydip/go-sc2ai/api"
+	"github.com/xenomote/sc2api/api"
 )
 
 var (
@@ -29,7 +29,7 @@ func SetReplayPath(path string) error {
 		replayFiles = []string{path}
 		return nil
 	}
-	
+
 	// Gather and append all files from the directory.
 	files, err := ioutil.ReadDir(path)
 	if err != nil {

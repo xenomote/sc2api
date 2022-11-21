@@ -4,7 +4,7 @@ import (
 	"log"
 	"sync"
 
-	"github.com/chippydip/go-sc2ai/client"
+	"github.com/xenomote/sc2api/client"
 )
 
 var (

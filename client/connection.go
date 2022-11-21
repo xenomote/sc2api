@@ -8,9 +8,9 @@ import (
 	"sync/atomic"
 	"time"
 
-	"github.com/chippydip/go-sc2ai/api"
 	"github.com/gogo/protobuf/proto"
 	"github.com/gorilla/websocket"
+	"github.com/xenomote/sc2api/api"
 )
 
 type connection struct {

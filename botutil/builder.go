@@ -3,10 +3,10 @@ package botutil
 import (
 	"log"
 
-	"github.com/chippydip/go-sc2ai/api"
-	"github.com/chippydip/go-sc2ai/client"
-	"github.com/chippydip/go-sc2ai/enums/ability"
-	"github.com/chippydip/go-sc2ai/enums/unit"
+	"github.com/xenomote/sc2api/api"
+	"github.com/xenomote/sc2api/client"
+	"github.com/xenomote/sc2api/enums/ability"
+	"github.com/xenomote/sc2api/enums/unit"
 )
 
 // Builder provides operations to make building/morphing/training/warping units easier.

@@ -3,7 +3,7 @@ package main
 import (
 	"math"
 
-	"github.com/chippydip/go-sc2ai/api"
+	"github.com/xenomote/sc2api/api"
 )
 
 func closestToPos(points []api.Point2D, pos api.Point2D) api.Point2D {

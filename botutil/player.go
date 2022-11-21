@@ -3,14 +3,14 @@ package botutil
 import (
 	"log"
 
-	"github.com/chippydip/go-sc2ai/api"
-	"github.com/chippydip/go-sc2ai/client"
+	"github.com/xenomote/sc2api/api"
+	"github.com/xenomote/sc2api/client"
 )
 
 // Player ...
 type Player struct {
 	api.PlayerCommon
-	api.PlayerInfo 
+	api.PlayerInfo
 	// TODO player struct copies player_id tag
 
 	OpponentID   api.PlayerID

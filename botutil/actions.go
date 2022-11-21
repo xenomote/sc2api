@@ -4,10 +4,10 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/chippydip/go-sc2ai/api"
-	"github.com/chippydip/go-sc2ai/client"
-	"github.com/chippydip/go-sc2ai/enums/ability"
-	"github.com/chippydip/go-sc2ai/enums/unit"
+	"github.com/xenomote/sc2api/api"
+	"github.com/xenomote/sc2api/client"
+	"github.com/xenomote/sc2api/enums/ability"
+	"github.com/xenomote/sc2api/enums/unit"
 )
 
 // Actions provides convenience methods for queueing actions to be sent in a batch.

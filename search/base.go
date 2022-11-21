@@ -4,8 +4,8 @@ import (
 	"log"
 	"strings"
 
-	"github.com/chippydip/go-sc2ai/api"
-	"github.com/chippydip/go-sc2ai/botutil"
+	"github.com/xenomote/sc2api/api"
+	"github.com/xenomote/sc2api/botutil"
 )
 
 // Base ...

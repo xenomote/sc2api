@@ -1,6 +1,6 @@
 package botutil_test
 
-import "github.com/chippydip/go-sc2ai/api"
+import "github.com/xenomote/sc2api/api"
 
 type mockAgentInfo struct{}
 
