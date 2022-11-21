@@ -10,15 +10,12 @@ import (
 )
 
 var (
-	replayFiles          = []string(nil)
 	replayFilter         = (func(info *api.ResponseReplayInfo) bool)(nil)
 	replayObservedPlayer = api.PlayerID(1)
-	replayCurrentFile    = ""
 )
 
-// SetReplayPath sets a directory of replay files or a single replay to load.
-func SetReplayPath(path string) error {
-	replayFiles = nil
+// ReplaysInDir lists a directory of replay files or a single replay
+func ReplaysInDir(path string) ([]string, error) {
 	if p, err := filepath.Abs(path); err != nil {
 		log.Printf("Failed to get absolute path: %v", err)
 	} else {
@@ -26,21 +23,23 @@ func SetReplayPath(path string) error {
 	}
 
 	if isReplayFile(filepath.Ext(path)) {
-		replayFiles = []string{path}
-		return nil
+		return []string{path}, nil
 	}
 
 	// Gather and append all files from the directory.
 	files, err := ioutil.ReadDir(path)
 	if err != nil {
-		return err
+		return nil, err
 	}
+
+	replayFiles := []string{}
 	for _, file := range files {
 		if !file.IsDir() && isReplayFile(filepath.Ext(file.Name())) {
 			replayFiles = append(replayFiles, filepath.Join(path, file.Name()))
 		}
 	}
-	return nil
+
+	return replayFiles, nil
 }
 
 func isReplayFile(path string) bool {
@@ -60,27 +59,19 @@ func SetReplayFilter(filter func(info *api.ResponseReplayInfo) bool) {
 	replayFilter = filter
 }
 
-// CurrentReplayPath provides access to the replay filename and full path of the current replay (if any).
-func CurrentReplayPath() string {
-	return replayCurrentFile
-}
-
-func runReplays(config *gameConfig) bool {
-	if len(replayFiles) == 0 {
-		return false
+func ReplayAll(config *gameConfig, files []string) {
+	if len(files) == 0 {
+		return
 	}
 
-	for _, file := range replayFiles {
-		replayCurrentFile = file
-		if startReplay(config, file) {
-			run(config.clients)
-		}
-		replayCurrentFile = ""
+	config.StartAll()
+
+	for _, file := range files {
+		Replay(config, file)
 	}
-	return true
 }
 
-func startReplay(config *gameConfig, path string) bool {
+func Replay(config *gameConfig, path string) {
 	// TODO: Parse the replay header ourselves to determine the correct BaseBuild and DataVersion
 	// since RequestReplayInfo seems to fail if the versions don't match (may be a new sc2 bug)
 	// See https://github.com/GraylinKim/sc2reader/wiki/.sc2replay
@@ -90,13 +81,13 @@ func startReplay(config *gameConfig, path string) bool {
 	info, err := config.clients[0].RequestReplayInfo(path)
 	if err != nil {
 		log.Printf("Unable to get replay info: %v", err)
-		return false
+		return
 	}
 
 	// Allow the bot user to skip certain replays after looking at the info
 	if replayFilter != nil && !replayFilter(info) {
 		log.Printf("Skipping replay: %v", path)
-		return false
+		return
 	}
 
 	// Check if we need to re-launch the game
@@ -105,7 +96,8 @@ func startReplay(config *gameConfig, path string) bool {
 		log.Printf("Version mis-match, relaunching client")
 		SetGameVersion(info.GetBaseBuild(), info.GetDataVersion())
 
-		config.reLaunchStarcraft()
+		config.KillAll()
+		config.StartAll()
 
 		current = config.clients[0].Proto()
 		if info.GetBaseBuild() != current.GetBaseBuild() {
@@ -129,5 +121,4 @@ func startReplay(config *gameConfig, path string) bool {
 		log.Fatalf("Unable to start replay: %v", err)
 	}
 
-	return true
 }

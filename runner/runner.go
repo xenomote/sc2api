@@ -27,44 +27,25 @@ func OpponentID() string {
 	return ladderOpponentID
 }
 
-// RunAgent starts the game.
-func RunAgent(agent client.PlayerSetup) {
+// Run starts the game.
+func Run(config *gameConfig) {
 	if !loadSettings() {
 		return
 	}
 
-	// fmt.Println(gamePort, startPort, ladderServer, computerOpponent, computerRace, computerDifficulty)
-	// fmt.Println(processSettings, gameSettings)
-
-	var numAgents = 1
-	var config *gameConfig
-	if computerOpponent && ladderGamePort == 0 {
-		config = newGameConfig(agent, client.NewComputer(computerRace, computerDifficulty, computerBuild))
-	} else {
-		numAgents = 2
-		config = newGameConfig(agent)
-	}
+	clients := config.clients
 
 	if ladderGamePort > 0 {
 		log.Print("Connecting to port ", ladderGamePort)
-		config.connect(ladderGamePort)
-		config.setupPorts(numAgents, ladderStartPort, false)
-		config.joinGame()
+		config.Connect(ladderGamePort)
+		config.setupPorts(len(clients), ladderStartPort, false)
+		config.JoinGame()
 		log.Print(" Successfully joined game")
 	} else {
-		config.launchStarcraft()
-
-		if runReplays(config) {
-			return // skip actual game
-		}
-
-		config.startGame(mapPath())
+		config.StartAll()
+		config.StartGame(mapPath())
 	}
 
-	run(config.clients)
-}
-
-func run(clients []*client.Client) {
 	wg := sync.WaitGroup{}
 	wg.Add(len(clients))
 

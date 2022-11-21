@@ -18,7 +18,7 @@ type gameConfig struct {
 	lastPort int
 }
 
-func newGameConfig(participants ...client.PlayerSetup) *gameConfig {
+func NewGameConfig(participants ...client.PlayerSetup) *gameConfig {
 	config := &gameConfig{
 		"127.0.0.1",
 		nil,
@@ -38,11 +38,11 @@ func newGameConfig(participants ...client.PlayerSetup) *gameConfig {
 	return config
 }
 
-func (config *gameConfig) startGame(mapPath string) {
+func (config *gameConfig) StartGame(mapPath string) {
 	if !config.createGame(mapPath) {
 		log.Fatal("Failed to create game.")
 	}
-	config.joinGame()
+	config.JoinGame()
 }
 
 func (config *gameConfig) createGame(mapPath string) bool {
@@ -59,7 +59,7 @@ func (config *gameConfig) createGame(mapPath string) bool {
 	return true
 }
 
-func (config *gameConfig) joinGame() bool {
+func (config *gameConfig) JoinGame() bool {
 	// TODO: Make this parallel and get rid of the WaitJoinGame method
 	for i, client := range config.clients {
 		if err := client.RequestJoinGame(config.playerSetup[i], processInterfaceOptions, config.ports); err != nil {
@@ -67,44 +67,14 @@ func (config *gameConfig) joinGame() bool {
 		}
 	}
 
-	// Check if any errors occurred during game start
-	// errors := false
-	// for _, client := range clients {
-	// 	errs := client.GetClientErrors()
-	// 	if len(errs) > 0 {
-	// 		client.Agent.OnError(errs, agent.Control().GetProtocolErrors())
-	// 		errors = true
-	// 	}
-
-	// 	//agent.Control().UseGeneralizedAbility(useGeneralizedAbilityID)
-	// }
-	// if errors {
-	// 	return false
-	// }
-
-	// Run all clients on game start
-	// for _, agent := range agents {
-	// 	agent.Control().GetObservation()
-	// }
-	// for _, agent := range agents {
-	// 	agent.OnGameFullStart()
-	// }
-	// for _, agent := range agents {
-	// 	agent.Control().OnGameStart()
-	// 	agent.OnGameStart()
-	// }
-	// for _, agent := range agents {
-	// 	agent.Control().IssueEvents(agent.Actions().Commands())
-	// }
 	return true
 }
 
-func (config *gameConfig) connect(port int) {
-	pi := client.ProcessInfo{Path: "", PID: 0, Port: port}
-
+func (config *gameConfig) Connect(port int) {
 	// Set process info for each bot
-	for range config.clients {
-		config.processInfo = append(config.processInfo, pi)
+	config.processInfo = make([]client.ProcessInfo, len(config.clients))
+	for i := range config.clients {
+		config.processInfo[i] = client.ProcessInfo{Port: port}
 	}
 
 	// Since connect is blocking do it after the processes are launched.

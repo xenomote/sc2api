@@ -87,8 +87,6 @@ func (c *Client) TryConnect(address string, port int) error {
 	return nil
 }
 
-// RemoteSaveMap(data []byte, remotePath string) error
-
 // CreateGame ...
 func (c *Client) CreateGame(mapPath string, players []*api.PlayerSetup, realtime bool) error {
 	r, err := c.connection.createGame(api.RequestCreateGame{

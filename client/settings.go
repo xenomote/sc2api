@@ -6,7 +6,6 @@ import (
 
 // ProcessInfo ...
 type ProcessInfo struct {
-	Path string
 	PID  int
 	Port int
 }

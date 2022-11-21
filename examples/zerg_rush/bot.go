@@ -126,17 +126,6 @@ func (bot *bot) tactics() {
 		return // wait for critical mass
 	}
 
-	// Auto-follow the action
-	camera, minDist2 := bot.myStartLocation, bot.myStartLocation.Distance2(bot.enemyStartLocation)
-	for _, c := range search.Cluster(lings, 16) {
-		pos := c.Center()
-		if dist2 := pos.Distance2(bot.enemyStartLocation); dist2 < minDist2 {
-			camera, minDist2 = pos, dist2
-		}
-	}
-	bot.camera = bot.camera.Add(bot.camera.VecTo(camera).Div(10))
-	bot.MoveCamera(bot.camera)
-
 	targets := bot.getTargets()
 	if targets.Len() == 0 {
 		lings.OrderPos(ability.Attack, bot.enemyStartLocation)

@@ -26,19 +26,11 @@ func SetGameVersion(baseBuild uint32, dataVersion string) {
 	launchDataVersion = dataVersion
 }
 
-func (config *gameConfig) reLaunchStarcraft() {
-	config.killAll()
-	config.launchStarcraft()
-}
-
-func (config *gameConfig) launchStarcraft() {
-	if len(config.clients) == 0 {
-		log.Panic("No agents set")
-	}
-
+// StartAll starts an instance of Starcraft II for each client
+func (config *gameConfig) StartAll() {
 	portStart := 0
 	if len(config.processInfo) != len(config.clients) {
-		config.killAll()
+		config.KillAll()
 		config.processInfo = config.launchProcesses(config.clients)
 		portStart = launchPortStart + len(config.processInfo) - 1
 	}
@@ -48,7 +40,8 @@ func (config *gameConfig) launchStarcraft() {
 	config.lastPort = portStart
 }
 
-func (config *gameConfig) killAll() {
+// KillAll stops all instances of Starcraft II associated with the game config
+func (config *gameConfig) KillAll() {
 	for _, pi := range config.processInfo {
 		if proc, err := os.FindProcess(pi.PID); err == nil && proc != nil {
 			proc.Kill()
@@ -61,9 +54,10 @@ func (config *gameConfig) launchProcesses(clients []*client.Client) []client.Pro
 	// Make sure we have a valid executable path
 	path := processPathForBuild(launchBaseBuild)
 	if _, err := os.Stat(path); err != nil {
-		log.Print("Executable path can't be found, try running the StarCraft II executable first.")
 		if len(path) > 0 {
-			log.Printf("%v does not exist on your filesystem.", path)
+			log.Fatalf("%v does not exist on your filesystem.", path)
+		} else {
+			log.Fatalf("Executable path can't be found, try running the StarCraft II executable first.")
 		}
 	}
 
@@ -86,37 +80,42 @@ func (config *gameConfig) launchProcesses(clients []*client.Client) []client.Pro
 }
 
 func (config *gameConfig) launchAndAttach(path string, c *client.Client) client.ProcessInfo {
-	pi := client.ProcessInfo{}
-	pi.Port = launchPortStart + len(config.processInfo) - 1
+	port := launchPortStart + len(config.processInfo) - 1
 
-	// See if we can connect to an old instance real quick before launching
-	if err := c.TryConnect(config.netAddress, pi.Port); err != nil {
-		args := []string{
-			"-listen", config.netAddress,
-			"-port", strconv.Itoa(pi.Port),
-			// DirectX will fail if multiple games try to launch in fullscreen mode. Force them into windowed mode.
-			"-displayMode", "0",
-		}
+	pi := client.ProcessInfo{
+		Port: port,
+	}
 
-		if len(launchDataVersion) > 0 {
-			args = append(args, "-dataVersion", launchDataVersion)
-		}
-		args = append(args, launchExtraCommandArgs...)
+	// See if we can connect to an old instance before launching
+	if err := c.TryConnect(config.netAddress, port); err == nil {
+		c.SetProcessInfo(pi)
+		return pi
+	}
 
-		// TODO: window size and position
+	args := []string{
+		"-listen", config.netAddress,
+		"-port", strconv.Itoa(port),
 
-		pi.Path = path
-		pi.PID = startProcess(pi.Path, args)
-		if pi.PID == 0 {
-			log.Print("Unable to start sc2 executable with path: ", pi.Path)
-		} else {
-			log.Printf("Launched SC2 (%v), PID: %v", pi.Path, pi.PID)
-		}
+		// DirectX will fail if multiple games try to launch in fullscreen mode. Force them into windowed mode.
+		"-displayMode", "0", 
+	}
+	if len(launchDataVersion) > 0 {
+		args = append(args, "-dataVersion", launchDataVersion)
+	}
+	args = append(args, launchExtraCommandArgs...)
 
-		// Attach
-		if err := c.Connect(config.netAddress, pi.Port, processConnectTimeout); err != nil {
-			log.Panic("Failed to connect")
-		}
+	// TODO: window size and position
+
+	pi.PID = startProcess(path, args)
+	if pi.PID == 0 {
+		log.Print("Unable to start sc2 executable with path: ", path)
+	} else {
+		log.Printf("Launched SC2 (%v), PID: %v", path, pi.PID)
+	}
+
+	// Attach
+	if err := c.Connect(config.netAddress, pi.Port, processConnectTimeout); err != nil {
+		log.Panic("Failed to connect")
 	}
 
 	c.SetProcessInfo(pi)
