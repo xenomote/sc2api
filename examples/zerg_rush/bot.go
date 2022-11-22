@@ -19,7 +19,7 @@ type bot struct {
 	myNaturalLocation  api.Point2D
 	enemyStartLocation api.Point2D
 
-	camera api.Point2D
+	wave int
 }
 
 func runAgent(info client.AgentInfo) {
@@ -42,7 +42,7 @@ func (bot *bot) init() {
 	// My hatchery is on start position
 	bot.myStartLocation = bot.Self[zerg.Hatchery].First().Pos2D()
 	bot.enemyStartLocation = *bot.GameInfo().GetStartRaw().GetStartLocations()[0]
-	bot.camera = bot.myStartLocation
+	bot.wave = 1
 
 	// Find natural location
 	expansions := search.CalculateBaseLocations(bot.Bot, false)
@@ -122,17 +122,27 @@ func (bot *bot) tactics() {
 	})
 
 	lings := bot.Self[zerg.Zergling]
-	if lings.Len() < 6 {
-		return // wait for critical mass
+	waiting, attacking := lings.Partition(func(u botutil.Unit) bool {
+		for _, order := range u.Orders {
+			if order.AbilityId == ability.Attack_Attack {
+				return false
+			}
+		}
+		return true
+	})
+
+	if waiting.Len() > bot.wave * 6 {
+		waiting.Each(func(u botutil.Unit) {u.OrderPos(ability.Attack, bot.enemyStartLocation)})
+		bot.wave++
 	}
 
 	targets := bot.getTargets()
 	if targets.Len() == 0 {
-		lings.OrderPos(ability.Attack, bot.enemyStartLocation)
+		attacking.OrderPos(ability.Attack, bot.enemyStartLocation)
 		return
 	}
 
-	lings.Each(func(ling botutil.Unit) {
+	attacking.Each(func(ling botutil.Unit) {
 		target := targets.ClosestTo(ling.Pos2D())
 		if ling.Pos2D().Distance2(target.Pos2D()) > 4*4 {
 			// If target is far, attack it as unit, ling will run ignoring everything else

@@ -74,7 +74,7 @@ func (c *Client) Connect(address string, port int, timeout time.Duration) error 
 		return fmt.Errorf("unable to connect to game")
 	}
 
-	log.Println("Connected to ", address, ":", port)
+	log.Println("Connected to", address, ":", port)
 	return nil
 }
 
