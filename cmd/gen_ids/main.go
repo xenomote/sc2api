@@ -21,7 +21,9 @@ func main() {
 	//runner.SetGameVersion(76811, "FF9FA4EACEC5F06DEB27BD297D73ED67")
 
 	agent := client.AgentFunc(generate)
-	runner.RunAgent(client.NewParticipant(api.Race_Random, agent, "NilBot"))
+	runner.Run(runner.NewGameConfig(
+		client.NewParticipant(api.Race_Random, agent, "NilBot"),
+	))
 }
 
 func generate(info client.AgentInfo) {

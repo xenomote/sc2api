@@ -14,13 +14,13 @@ type bot struct {
 }
 
 func main() {
-	// Play a random map against a medium difficulty computer
-	runner.SetComputer(api.Race_Random, api.Difficulty_Easy, api.AIBuild_RandomBuild)
-
-	// Create the agent and then start the game
-	botutil.SetGameVersion()
 	agent := client.AgentFunc(runAgent)
-	runner.RunAgent(client.NewParticipant(api.Race_Protoss, agent, "StubBot"))
+	runner.Run(
+		runner.NewGameConfig(
+			client.NewParticipant(api.Race_Protoss, agent, "StubBot"),
+			client.NewComputer(api.Race_Random, api.Difficulty_Medium, api.AIBuild_RandomBuild),
+		),
+	)
 }
 
 func runAgent(info client.AgentInfo) {
