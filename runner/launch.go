@@ -70,7 +70,7 @@ func (config *gameConfig) launchProcesses(clients []*client.Client) []client.Pro
 		go func(i int, c *client.Client) {
 			defer wg.Done()
 
-			info[i] = config.launchAndAttach(path, c)
+			info[i] = config.launchAndAttach(c, path, launchPortStart)
 
 		}(i, c)
 	}
@@ -79,9 +79,7 @@ func (config *gameConfig) launchProcesses(clients []*client.Client) []client.Pro
 	return info
 }
 
-func (config *gameConfig) launchAndAttach(path string, c *client.Client) client.ProcessInfo {
-	port := launchPortStart + len(config.processInfo) - 1
-
+func (config *gameConfig) launchAndAttach(c *client.Client, path string, port int) client.ProcessInfo {
 	pi := client.ProcessInfo{
 		Port: port,
 	}
@@ -114,7 +112,7 @@ func (config *gameConfig) launchAndAttach(path string, c *client.Client) client.
 	}
 
 	// Attach
-	if err := c.Connect(config.netAddress, pi.Port, processConnectTimeout); err != nil {
+	if err := c.Connect(config.netAddress, port, processConnectTimeout); err != nil {
 		log.Panic("Failed to connect")
 	}
 
@@ -124,6 +122,8 @@ func (config *gameConfig) launchAndAttach(path string, c *client.Client) client.
 
 func startProcess(path string, args []string) int {
 	cmd := exec.Command(path, args...)
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
 
 	// Set the working directory on windows
 	if runtime.GOOS == "windows" {

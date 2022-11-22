@@ -102,7 +102,7 @@ func (config *gameConfig) setupPorts(numAgents int, startPort int, checkSingle b
 	}
 
 	if humans > 1 {
-		var ports = config.ports
+		ports := config.ports
 		ports.SharedPort = int32(startPort + 1)
 		ports.ServerPorts = &api.PortSet{
 			GamePort: int32(startPort + 2),

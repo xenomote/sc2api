@@ -13,6 +13,7 @@ func main() {
 	runner.Run(
 		runner.NewGameConfig(
 			client.NewParticipant(api.Race_Zerg, agent, "ZergRush"),
+			// client.NewParticipant(api.Race_Zerg, agent, "ZergRush"),
 			client.NewComputer(api.Race_Random, api.Difficulty_Medium, api.AIBuild_RandomBuild),
 		),
 	)

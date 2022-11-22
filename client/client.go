@@ -55,16 +55,17 @@ func (c *Client) Connect(address string, port int, timeout time.Duration) error 
 
 	connected := false
 	for i := 0; i < attempts; i++ {
-		if err := c.connection.Connect(address, port); err == nil {
+		err := c.connection.Connect(address, port)
+		if err == nil {
 			connected = true
 			break
 		}
+		fmt.Println(err)
+
 		time.Sleep(time.Second)
 
 		if i == 0 {
-			fmt.Print("Waiting for connection")
-		} else {
-			fmt.Print(".")
+			fmt.Println("Waiting for connection")
 		}
 	}
 	fmt.Println()
@@ -73,7 +74,7 @@ func (c *Client) Connect(address string, port int, timeout time.Duration) error 
 		return fmt.Errorf("unable to connect to game")
 	}
 
-	log.Printf("Connected to %v:%v", address, port)
+	log.Println("Connected to ", address, ":", port)
 	return nil
 }
 

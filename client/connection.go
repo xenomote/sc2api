@@ -95,7 +95,7 @@ func (c *connection) sendRecv(data []byte, name string) ([]byte, error) {
 		case r := <-out:
 			return r.data, r.error
 		case <-time.After(10 * time.Second):
-			log.Printf("waiting for %v response", name)
+			log.Println("waiting for ", name, " response")
 		}
 	}
 }
