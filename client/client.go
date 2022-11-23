@@ -353,65 +353,10 @@ func (c *Client) reportPerf() {
 	c.lastDraw = c.lastDraw[:len(c.lastDraw)-1]
 }
 
-// SaveReplay(path string) error
-
-// Print() error
-
-// // General
-// WaitForResponse() (*GameResponse, error)
-
-// SetProcessInfo ...
-func (c *Client) SetProcessInfo(pi ProcessInfo) {
-	// TODO
-}
-
-// GetProcessInfo() ProcessInfo
-
-// GetAppState() AppState
-
-// GetLastStatus() api.Status
-
 // IsInGame ...
 func (c *Client) IsInGame() bool {
 	return c.connection.Status == api.Status_in_game || c.connection.Status == api.Status_in_replay
 }
-
-// IsFinishedGame() bool
-// HasResponsePending() bool
-
-// GetObservation ...
-func (c *Client) GetObservation() (*api.ResponseObservation, error) {
-	return c.connection.observation(api.RequestObservation{})
-}
-
-// PollResponse() bool
-// ConsumeResponse() bool
-
-// IssueEvents(commands []Tag) bool
-// OnGameStart()
-
-// // Diagnostic
-// DumpProtoUsage()
-
-// Error(err ClientError, errors []string)
-// ErrorIf(condition bool, err ClientError, errors []string)
-
-// func (c *Client) GetClientErrors() []ClientError {
-// 	return nil
-// }
-
-// func (c *Client) GetProtocolErrors() []string {
-// 	return nil
-// }
-
-// ClearClientErrors()
-// ClearProtocolErrors()
-
-// UseGeneralizedAbility(value bool)
-
-// // Save/Load
-// Save()
-// Load()
 
 func firstOrNil(errs ...error) error {
 	for _, e := range errs {

@@ -3,11 +3,9 @@ package botutil
 import (
 	"fmt"
 	"log"
-	"strings"
 
 	"github.com/xenomote/sc2api/client"
-	"github.com/xenomote/sc2api/runner"
-)
+ )
 
 // Bot ...
 type Bot struct {
@@ -44,34 +42,18 @@ func NewBot(info client.AgentInfo) *Bot {
 }
 
 func (bot *Bot) checkVersion() {
-	if c, ok := bot.AgentInfo.(*client.Client); !ok {
+	c, ok := bot.AgentInfo.(*client.Client)
+	if !ok {
 		log.Print("Skipping version check") // Should only happen when AgentInfo is mocked
-	} else {
-		// Check the game version, this should be less important but still worth reporting
-		cVersion := formatVersion(c.GameVersion, c.BaseBuild)
-		if c.BaseBuild == BaseBuild && c.GameVersion == GameVersion {
-			bot.ChatTeam(fmt.Sprintf("(sc2) %v (thumbsup)", cVersion))
-		} else {
-			bot.ChatTeam(fmt.Sprintf("(sc2) %v (thumbsdown) (%v)", cVersion, formatVersion(GameVersion, BaseBuild)))
-		}
-
-		// It's critical that data versions match, however, or generated IDs may be wrong
-		if c.DataBuild != DataBuild || c.DataVersion != DataVersion {
-			bot.ChatTeam(fmt.Sprintf("(poo) (poo) (angry) (poo) (poo) %v:%v (scared) %v:%v",
-				c.DataBuild, c.DataVersion, DataBuild, DataVersion))
-		}
+		return
 	}
-}
 
-func formatVersion(gameVersion string, baseBuild uint32) string {
-	if strings.HasSuffix(gameVersion, fmt.Sprintf(".%v", baseBuild)) {
-		return gameVersion
+	// It's critical that data versions match, however, or generated IDs may be wrong
+	if c.DataBuild != DataBuild {
+		log.Println("data build", c.DataBuild, "does not match", DataBuild)
 	}
-	return fmt.Sprintf("%v(%v)", gameVersion, baseBuild)
-}
 
-// SetGameVersion sets the default base build and data version to the values
-// last used to generate IDs.
-func SetGameVersion() {
-	runner.SetGameVersion(DataBuild, DataVersion)
+	if  c.DataVersion != DataVersion {
+		log.Println("data version", c.DataVersion, "does not match", DataVersion)
+	}
 }

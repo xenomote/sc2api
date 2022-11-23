@@ -81,7 +81,6 @@ func (config *gameConfig) launchAndAttach(c *client.Client, path string) client.
 
 	// See if we can connect to an old instance before launching
 	if err := c.TryConnect(config.netAddress, pi.GamePort); err == nil {
-		c.SetProcessInfo(pi)
 		return pi
 	}
 
@@ -111,7 +110,6 @@ func (config *gameConfig) launchAndAttach(c *client.Client, path string) client.
 		log.Panic("Failed to connect")
 	}
 
-	c.SetProcessInfo(pi)
 	return pi
 }
 
