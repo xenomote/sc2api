@@ -47,7 +47,7 @@ type Client struct {
 }
 
 // Connect ...
-func (c *Client) Connect(address string, port int, timeout time.Duration) error {
+func (c *Client) Connect(address string, port int32, timeout time.Duration) error {
 	attempts := int(timeout.Seconds() + 1.5)
 	if attempts < 1 {
 		attempts = 1
@@ -79,7 +79,7 @@ func (c *Client) Connect(address string, port int, timeout time.Duration) error 
 }
 
 // TryConnect ...
-func (c *Client) TryConnect(address string, port int) error {
+func (c *Client) TryConnect(address string, port int32) error {
 	if err := c.connection.Connect(address, port); err != nil {
 		return err
 	}
@@ -118,12 +118,11 @@ func (c *Client) RequestJoinGame(setup *api.PlayerSetup, options *api.InterfaceO
 			Race: setup.Race,
 		},
 		Options: options,
+
+		ServerPorts: ports.ServerPorts,
+		ClientPorts: ports.ClientPorts,
 	}
-	if ports.isValid() {
-		req.SharedPort = ports.SharedPort
-		req.ServerPorts = ports.ServerPorts
-		req.ClientPorts = ports.ClientPorts
-	}
+	
 	r, err := c.connection.joinGame(req)
 	if err != nil {
 		return err

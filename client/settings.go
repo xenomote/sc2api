@@ -6,8 +6,9 @@ import (
 
 // ProcessInfo ...
 type ProcessInfo struct {
-	PID  int
-	Port int
+	PID      int
+	GamePort int32
+	BasePort int32
 }
 
 // PlayerSetup ...
@@ -55,23 +56,4 @@ func NewObserver(agent Agent, name string) PlayerSetup {
 type Ports struct {
 	ServerPorts *api.PortSet
 	ClientPorts []*api.PortSet
-	SharedPort  int32
-}
-
-func (p Ports) isValid() bool {
-	if p.SharedPort < 1 || !portSetIsValid(p.ServerPorts) || len(p.ClientPorts) < 1 {
-		return false
-	}
-
-	for _, ps := range p.ClientPorts {
-		if !portSetIsValid(ps) {
-			return false
-		}
-	}
-
-	return true
-}
-
-func portSetIsValid(ps *api.PortSet) bool {
-	return ps != nil && ps.GamePort > 0 && ps.BasePort > 0
 }

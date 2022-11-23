@@ -9,7 +9,7 @@ import (
 func main() {
 	agent := client.AgentFunc(runAgent)
 	
-	runner.SetRealtime()
+	// runner.SetRealtime()
 	runner.Run(
 		runner.NewGameConfig(
 			client.NewParticipant(api.Race_Zerg, agent, "ZergRush"),

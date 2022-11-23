@@ -37,8 +37,7 @@ func Run(config *gameConfig) {
 
 	if ladderGamePort > 0 {
 		log.Print("Connecting to port ", ladderGamePort)
-		config.Connect(ladderGamePort)
-		config.setupPorts(len(clients), ladderStartPort, false)
+		config.Connect(int32(ladderGamePort))
 		config.JoinGame()
 		log.Print(" Successfully joined game")
 	} else {

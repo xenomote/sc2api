@@ -16,7 +16,6 @@ import (
 var (
 	launchBaseBuild        = uint32(0)
 	launchDataVersion      = ""
-	launchPortStart        = 8168
 	launchExtraCommandArgs = []string(nil)
 )
 
@@ -28,16 +27,10 @@ func SetGameVersion(baseBuild uint32, dataVersion string) {
 
 // StartAll starts an instance of Starcraft II for each client
 func (config *gameConfig) StartAll() {
-	portStart := 0
-	if len(config.processInfo) != len(config.clients) {
-		config.KillAll()
-		config.processInfo = config.launchProcesses(config.clients)
-		portStart = launchPortStart + len(config.processInfo) - 1
-	}
+	
+	config.processInfo = config.launchProcesses()
 
-	config.setupPorts(len(config.clients), portStart, true)
 	config.started = true
-	config.lastPort = portStart
 }
 
 // KillAll stops all instances of Starcraft II associated with the game config
@@ -50,7 +43,9 @@ func (config *gameConfig) KillAll() {
 	config.processInfo = nil
 }
 
-func (config *gameConfig) launchProcesses(clients []*client.Client) []client.ProcessInfo {
+func (config *gameConfig) launchProcesses() []client.ProcessInfo {
+	clients := config.clients
+
 	// Make sure we have a valid executable path
 	path := processPathForBuild(launchBaseBuild)
 	if _, err := os.Stat(path); err != nil {
@@ -70,8 +65,7 @@ func (config *gameConfig) launchProcesses(clients []*client.Client) []client.Pro
 		go func(i int, c *client.Client) {
 			defer wg.Done()
 
-			info[i] = config.launchAndAttach(c, path, launchPortStart)
-
+			info[i] = config.launchAndAttach(c, path)
 		}(i, c)
 	}
 	wg.Wait()
@@ -79,20 +73,21 @@ func (config *gameConfig) launchProcesses(clients []*client.Client) []client.Pro
 	return info
 }
 
-func (config *gameConfig) launchAndAttach(c *client.Client, path string, port int) client.ProcessInfo {
+func (config *gameConfig) launchAndAttach(c *client.Client, path string) client.ProcessInfo {
 	pi := client.ProcessInfo{
-		Port: port,
+		GamePort: config.NextPort(),
+		BasePort: config.NextPort(),
 	}
 
 	// See if we can connect to an old instance before launching
-	if err := c.TryConnect(config.netAddress, port); err == nil {
+	if err := c.TryConnect(config.netAddress, pi.GamePort); err == nil {
 		c.SetProcessInfo(pi)
 		return pi
 	}
 
 	args := []string{
 		"-listen", config.netAddress,
-		"-port", strconv.Itoa(port),
+		"-port", strconv.Itoa(int(pi.GamePort)),
 
 		// DirectX will fail if multiple games try to launch in fullscreen mode. Force them into windowed mode.
 		"-displayMode", "0", 
@@ -112,12 +107,17 @@ func (config *gameConfig) launchAndAttach(c *client.Client, path string, port in
 	}
 
 	// Attach
-	if err := c.Connect(config.netAddress, port, processConnectTimeout); err != nil {
+	if err := c.Connect(config.netAddress, pi.GamePort, processConnectTimeout); err != nil {
 		log.Panic("Failed to connect")
 	}
 
 	c.SetProcessInfo(pi)
 	return pi
+}
+
+func (config *gameConfig) NextPort() int32 {
+	config.nextPort++
+	return config.nextPort
 }
 
 func startProcess(path string, args []string) int {

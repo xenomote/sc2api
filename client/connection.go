@@ -1,7 +1,6 @@
 package client
 
 import (
-	"errors"
 	"fmt"
 	"log"
 	"reflect"
@@ -38,10 +37,10 @@ type response struct {
 // to prevent large messages from being sent and warnings will be printed if a message size
 // exceeds half of this limit. The default is now 2MB (up from 4kb) but can be overrided by
 // modifying this value before connecting to SC2.
-var MaxMessageSize = 2 * 1024 * 1024
+const MaxMessageSize = 2 * 1024 * 1024
 
 // Connect ...
-func (c *connection) Connect(address string, port int) error {
+func (c *connection) Connect(address string, port int32) error {
 	c.Status = api.Status_unknown
 
 	dialer := websocket.Dialer{WriteBufferSize: MaxMessageSize}
@@ -141,12 +140,10 @@ func (c *connection) request(r *api.Request) (*api.Response, error) {
 	}
 
 	// Report errors (if any) and return
-	switch len(resp.Error) {
-	case 0:
-		return resp, nil
-	case 1:
-		return nil, errors.New(resp.Error[0])
-	default:
-		return nil, fmt.Errorf("%v", resp.Error)
+	if len(resp.Error) > 0 {
+		return nil, fmt.Errorf("%v", resp)
 	}
+
+	return resp, nil
 }
+

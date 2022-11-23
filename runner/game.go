@@ -7,27 +7,22 @@ import (
 	"github.com/xenomote/sc2api/client"
 )
 
+const launchPortStart = 8168
+
 type gameConfig struct {
-	netAddress  string
+	netAddress string
+	nextPort   int32
+
 	processInfo []client.ProcessInfo
 	playerSetup []*api.PlayerSetup
 	ports       client.Ports
 
-	clients  []*client.Client
-	started  bool
-	lastPort int
+	clients []*client.Client
+	started bool
 }
 
 func NewGameConfig(participants ...client.PlayerSetup) *gameConfig {
-	config := &gameConfig{
-		"127.0.0.1",
-		nil,
-		nil,
-		client.Ports{},
-		nil,
-		false,
-		0,
-	}
+	config := &gameConfig{netAddress: "127.0.0.1", nextPort: launchPortStart}
 
 	for _, p := range participants {
 		if p.Agent != nil {
@@ -42,6 +37,26 @@ func (config *gameConfig) StartGame(mapPath string) {
 	if !config.createGame(mapPath) {
 		log.Fatal("Failed to create game.")
 	}
+
+	clients := config.processInfo
+	if len(clients) > 1 {
+		server := clients[0]
+		config.ports.ServerPorts = &api.PortSet{
+			GamePort: server.GamePort,
+			BasePort: server.BasePort,
+		}
+
+		config.ports.ClientPorts = make([]*api.PortSet, len(clients) - 1)
+		for i := 1; i < len(clients); i++ {
+			client := clients[i]
+
+			config.ports.ClientPorts[i - 1] = &api.PortSet{
+				BasePort: client.BasePort,
+				GamePort: client.GamePort,
+			}
+		}		
+	}
+
 	config.JoinGame()
 }
 
@@ -60,7 +75,7 @@ func (config *gameConfig) createGame(mapPath string) bool {
 }
 
 func (config *gameConfig) JoinGame() bool {
-	// TODO: Make this parallel and get rid of the WaitJoinGame method
+	// TODO: Make this parallel
 	for i, client := range config.clients {
 		if err := client.RequestJoinGame(config.playerSetup[i], processInterfaceOptions, config.ports); err != nil {
 			log.Fatalf("Unable to join game: %v", err)
@@ -70,49 +85,22 @@ func (config *gameConfig) JoinGame() bool {
 	return true
 }
 
-func (config *gameConfig) Connect(port int) {
+func (config *gameConfig) Connect(port int32) {
 	// Set process info for each bot
 	config.processInfo = make([]client.ProcessInfo, len(config.clients))
 	for i := range config.clients {
-		config.processInfo[i] = client.ProcessInfo{Port: port}
+		config.processInfo[i] = client.ProcessInfo{GamePort: port}
 	}
 
 	// Since connect is blocking do it after the processes are launched.
 	for i, client := range config.clients {
 		pi := config.processInfo[i]
 
-		if err := client.Connect(config.netAddress, pi.Port, processConnectTimeout); err != nil {
+		if err := client.Connect(config.netAddress, pi.GamePort, processConnectTimeout); err != nil {
 			log.Panic("Failed to connect")
 		}
 	}
 
 	// Assume starcraft has started after succesfully attaching to a server
 	config.started = true
-}
-
-func (config *gameConfig) setupPorts(numAgents int, startPort int, checkSingle bool) {
-	humans := numAgents
-	if checkSingle {
-		humans = 0
-		for _, p := range config.playerSetup {
-			if p.Type == api.PlayerType_Participant {
-				humans++
-			}
-		}
-	}
-
-	if humans > 1 {
-		ports := config.ports
-		ports.SharedPort = int32(startPort + 1)
-		ports.ServerPorts = &api.PortSet{
-			GamePort: int32(startPort + 2),
-			BasePort: int32(startPort + 3),
-		}
-
-		for i := 0; i < numAgents; i++ {
-			var base = int32(startPort + 4 + i*2)
-			ports.ClientPorts = append(ports.ClientPorts, &api.PortSet{GamePort: base, BasePort: base + 1})
-		}
-		config.ports = ports
-	}
 }
