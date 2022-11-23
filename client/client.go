@@ -118,8 +118,7 @@ func (c *Client) RequestJoinGame(setup *api.PlayerSetup, options *api.InterfaceO
 			Race: setup.Race,
 		},
 		Options: options,
-
-		
+		PlayerName: setup.PlayerName,
 	}
 
 	if ports != nil {

@@ -23,7 +23,10 @@ type gameConfig struct {
 }
 
 func NewGameConfig(participants ...client.PlayerSetup) *gameConfig {
-	config := &gameConfig{netAddress: "127.0.0.1", nextPort: launchPortStart}
+	config := &gameConfig{
+		netAddress: "127.0.0.1",
+		nextPort:   launchPortStart,
+	}
 
 	for _, p := range participants {
 		if p.Agent != nil {
@@ -87,7 +90,7 @@ func (config *gameConfig) JoinGame() bool {
 	wg.Add(len(clients))
 
 	for i := range clients {
-		go func (i int)  {
+		go func(i int) {
 			defer wg.Done()
 			if err := clients[i].RequestJoinGame(config.playerSetup[i], processInterfaceOptions, config.ports); err != nil {
 				log.Fatalf("Unable to join game: %v", err)
