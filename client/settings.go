@@ -54,6 +54,6 @@ func NewObserver(agent Agent, name string) PlayerSetup {
 
 // Ports ...
 type Ports struct {
-	ServerPorts *api.PortSet
+	ServerPorts api.PortSet
 	ClientPorts []*api.PortSet
 }

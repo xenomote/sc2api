@@ -2,6 +2,7 @@ package runner
 
 import (
 	"log"
+	"sync"
 
 	"github.com/xenomote/sc2api/api"
 	"github.com/xenomote/sc2api/client"
@@ -15,7 +16,7 @@ type gameConfig struct {
 
 	processInfo []client.ProcessInfo
 	playerSetup []*api.PlayerSetup
-	ports       client.Ports
+	ports       *client.Ports
 
 	clients []*client.Client
 	started bool
@@ -41,20 +42,26 @@ func (config *gameConfig) StartGame(mapPath string) {
 	clients := config.processInfo
 	if len(clients) > 1 {
 		server := clients[0]
-		config.ports.ServerPorts = &api.PortSet{
-			GamePort: server.GamePort,
-			BasePort: server.BasePort,
-		}
 
-		config.ports.ClientPorts = make([]*api.PortSet, len(clients) - 1)
+		clientports := make([]*api.PortSet, len(clients)-1)
 		for i := 1; i < len(clients); i++ {
 			client := clients[i]
 
-			config.ports.ClientPorts[i - 1] = &api.PortSet{
+			clientports[i-1] = &api.PortSet{
 				BasePort: client.BasePort,
 				GamePort: client.GamePort,
 			}
-		}		
+		}
+
+		config.ports = &client.Ports{
+			ServerPorts: api.PortSet{
+				GamePort: server.GamePort,
+				BasePort: server.BasePort,
+			},
+
+			ClientPorts: clientports,
+		}
+
 	}
 
 	config.JoinGame()
@@ -75,12 +82,20 @@ func (config *gameConfig) createGame(mapPath string) bool {
 }
 
 func (config *gameConfig) JoinGame() bool {
-	// TODO: Make this parallel
-	for i, client := range config.clients {
-		if err := client.RequestJoinGame(config.playerSetup[i], processInterfaceOptions, config.ports); err != nil {
-			log.Fatalf("Unable to join game: %v", err)
-		}
+	clients := config.clients
+	var wg sync.WaitGroup
+	wg.Add(len(clients))
+
+	for i := range clients {
+		go func (i int)  {
+			defer wg.Done()
+			if err := clients[i].RequestJoinGame(config.playerSetup[i], processInterfaceOptions, config.ports); err != nil {
+				log.Fatalf("Unable to join game: %v", err)
+			}
+		}(i)
 	}
+
+	wg.Wait()
 
 	return true
 }

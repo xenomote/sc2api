@@ -11,15 +11,6 @@ var (
 	mapName = Random1v1Map()
 )
 
-func init() {
-	flagStr("map", &mapName, "Which map to run.")
-}
-
-// SetMap sets the default map to use.
-func SetMap(name string) {
-	Set("map", name)
-}
-
 // Random1v1Map returns a random map name from the current 1v1 ladder map pool.
 func Random1v1Map() string {
 	currentMaps := Maps

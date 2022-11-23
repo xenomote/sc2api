@@ -7,53 +7,22 @@ import (
 	"github.com/xenomote/sc2api/client"
 )
 
-var (
-	ladderGamePort   = 0
-	ladderStartPort  = 0
-	ladderServer     = ""
-	ladderOpponentID = ""
-)
-
-func init() {
-	// Ladder Flags
-	flagInt("GamePort", &ladderGamePort, "Port of client to connect to")
-	flagInt("StartPort", &ladderStartPort, "Starting server port")
-	flagStr("LadderServer", &ladderServer, "Ladder server address")
-	flagStr("OpponentId", &ladderOpponentID, "Ladder ID of the opponent (for learning bots)")
-}
-
-// OpponentID returns the current ladder opponent ID or an empty string.
-func OpponentID() string {
-	return ladderOpponentID
-}
-
 // Run starts the game.
 func Run(config *gameConfig) {
-	if !loadSettings() {
-		return
-	}
+	config.StartAll()
+	config.StartGame(mapPath())
 
 	clients := config.clients
-
-	if ladderGamePort > 0 {
-		log.Print("Connecting to port ", ladderGamePort)
-		config.Connect(int32(ladderGamePort))
-		config.JoinGame()
-		log.Print(" Successfully joined game")
-	} else {
-		config.StartAll()
-		config.StartGame(mapPath())
-	}
 
 	wg := sync.WaitGroup{}
 	wg.Add(len(clients))
 
 	for _, c := range clients {
 		go func(client *client.Client) {
-			defer wg.Done()
-
 			runAgent(client)
 			cleanup(client)
+
+			wg.Done()
 		}(c)
 	}
 
@@ -92,10 +61,7 @@ func runAgent(c *client.Client) {
 }
 
 func cleanup(c *client.Client) {
-	if ladderGamePort == 0 {
-		// Leave the game (but only in non-ladder games)
-		c.RequestLeaveGame()
-	}
+	c.RequestLeaveGame()
 
 	// Print the winner
 	for _, player := range c.Observation().GetPlayerResult() {

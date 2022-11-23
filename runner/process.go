@@ -2,7 +2,6 @@ package runner
 
 import (
 	"fmt"
-	"io/ioutil"
 	"log"
 	"os"
 	"os/exec"
@@ -29,27 +28,14 @@ var (
 	processConnectTimeout, _ = time.ParseDuration("2m")
 )
 
-func init() {
-	// Blizzard Flags
-	flagStr("executable", &processPath, "The path to StarCraft II.")
-	//flagInt("port", &processSettings.portStart, "The port to make StarCraft II listen on.")
-	flagBool("realtime", &processRealtime, "Whether to run StarCraft II in real time or not.")
-	flagDur("timeout", &processConnectTimeout, "Timeout for how long the library will block for a response.")
-}
-
-// SetExecutable sets the default executable path to use.
-func SetExecutable(exePath string) {
-	Set("executable", exePath)
-}
-
 // SetRealtime sets the default realtime option to enabled.
 func SetRealtime() {
-	Set("realtime", "1")
+	processRealtime = true
 }
 
 // SetConnectTimeout sets how long to wait for a connection to the game.
 func SetConnectTimeout(timeout time.Duration) {
-	Set("timeout", fmt.Sprint(timeout))
+	processConnectTimeout = timeout
 }
 
 // SetInterfaceOptions sets the interface launch options when starting a game.
@@ -96,10 +82,6 @@ func defaultExecutable() string {
 		}
 	}
 	return path
-}
-
-func hasProcessPath() bool {
-	return len(processPath) != 0
 }
 
 func processPathForBuild(build uint32) string {
@@ -176,7 +158,7 @@ func sc2Path(path string) string {
 
 func getSubdirs(dir string) []string {
 	dirs := []string{}
-	files, _ := ioutil.ReadDir(dir)
+	files, _ := os.ReadDir(dir)
 	for _, f := range files {
 		if f.IsDir() {
 			dirs = append(dirs, f.Name())

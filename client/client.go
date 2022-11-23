@@ -112,15 +112,19 @@ func (c *Client) CreateGame(mapPath string, players []*api.PlayerSetup, realtime
 }
 
 // RequestJoinGame ...
-func (c *Client) RequestJoinGame(setup *api.PlayerSetup, options *api.InterfaceOptions, ports Ports) error {
+func (c *Client) RequestJoinGame(setup *api.PlayerSetup, options *api.InterfaceOptions, ports *Ports) error {
 	req := api.RequestJoinGame{
 		Participation: &api.RequestJoinGame_Race{
 			Race: setup.Race,
 		},
 		Options: options,
 
-		ServerPorts: ports.ServerPorts,
-		ClientPorts: ports.ClientPorts,
+		
+	}
+
+	if ports != nil {
+		req.ServerPorts = &ports.ServerPorts
+		req.ClientPorts = ports.ClientPorts
 	}
 	
 	r, err := c.connection.joinGame(req)
