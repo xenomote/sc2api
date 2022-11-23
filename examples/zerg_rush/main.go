@@ -2,6 +2,7 @@ package main
 
 import (
 	"flag"
+	"log"
 	"os"
 
 	"github.com/xenomote/sc2api/api"
@@ -11,10 +12,14 @@ import (
 
 func main() {
 	f := flag.NewFlagSet("zerg rush", flag.ExitOnError)
-	r := f.String("race", api.Race_Terran.String(), "the race you will play")
+	r := f.String("race", api.Race_Random.String(), "the race you will play, defaults to random")
 	f.Parse(os.Args[1:])
-
-	race := api.Race(api.Race_value[*r])
+	
+	rv, ok := api.Race_value[*r]
+	if !ok {
+		log.Fatalln(*r, "is not a valid input for race")
+	}
+	race := api.Race(rv)
 
 	agent := client.AgentFunc(runAgent)
 	human := client.AgentFunc(func(ai client.AgentInfo) {})
