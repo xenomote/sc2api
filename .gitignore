@@ -1,10 +1,15 @@
 # ignore all files
 *
 
+# include go files
+!*.go
+!go.mod
+!go.sum
+
+# include specific files
 !.gitignore
 !LICENSE
 !README.md
 
-!*.go
-!*.mod
-!*.sum
+# include even in subdirectories
+!*/
