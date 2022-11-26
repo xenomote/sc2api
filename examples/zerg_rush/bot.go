@@ -8,6 +8,8 @@ import (
 	"github.com/xenomote/sc2api/client"
 	"github.com/xenomote/sc2api/enums/ability"
 	"github.com/xenomote/sc2api/enums/buff"
+	"github.com/xenomote/sc2api/enums/unit"
+	"github.com/xenomote/sc2api/enums/upgrade"
 	"github.com/xenomote/sc2api/enums/zerg"
 	"github.com/xenomote/sc2api/search"
 )
@@ -23,6 +25,8 @@ type bot struct {
 
 	hatcheryCount  int
 	harvesterCount int
+
+	harvestedGas int
 }
 
 func runAgent(info client.AgentInfo) {
@@ -77,6 +81,8 @@ func (bot *bot) init() {
 func (bot *bot) strategy() {
 	// Do we have a pool? if not, try to build one
 	pool := bot.Self[zerg.SpawningPool].First()
+	extractor := bot.Self[zerg.Extractor].First()
+
 	if pool.IsNil() {
 		pos := bot.myStartLocation.Offset(bot.enemyStartLocation, 5)
 		if !bot.BuildUnitAt(zerg.Drone, ability.Build_SpawningPool, pos) {
@@ -106,6 +112,15 @@ func (bot *bot) strategy() {
 	// We need a pool before trying to build lings or queens
 	if pool.IsNil() || pool.BuildProgress < 1 {
 		return
+	}
+
+	if extractor.IsNil() {
+		geyser := bot.Neutral.Vespene().ClosestTo(bot.myStartLocation)
+		if !bot.BuildUnitOn(zerg.Drone, ability.Build_Extractor, geyser) {
+			return
+		}
+	} else if !bot.HasUpgrade(upgrade.Zerglingmovementspeed) && bot.harvestedGas >= 100 {
+		pool.Order(ability.Research_ZerglingMetabolicBoost)
 	}
 
 	// Spend any extra larva on zerglings
@@ -144,8 +159,26 @@ func (bot *bot) tactics() {
 		hatcheries.OrderPos(ability.Rally_Hatchery_Units, hatch.Pos2D())
 	}
 
-	if bot.OpponentRace == api.Race_Terran {
-		bot.waveSize = 3
+	extractor := bot.Self[zerg.Extractor].First()
+	if !extractor.IsNil() {
+		if bot.harvestedGas < 100 {
+			bot.harvestedGas = int(bot.Vespene)
+			if extractor.GetAssignedHarvesters() < extractor.GetIdealHarvesters() {
+				harvesters.First().OrderTarget(ability.Harvest_Gather, extractor)
+			}
+		} else {
+			if extractor.GetAssignedHarvesters() > 0 {
+				minerals := bot.Neutral.Minerals().ClosestTo(extractor.Pos2D())
+				harvesters.Choose(func(u botutil.Unit) bool {
+					for _, order := range u.GetOrders() {
+						if order.GetTargetUnitTag() == extractor.Tag {
+							return true
+						}
+					}
+					return false
+				}).OrderTarget(ability.Harvest_Gather, minerals)
+			}
+		}
 	}
 
 	hatcheries.IsBuilt().NoBuff(buff.QueenSpawnLarvaTimer).Each(func(u botutil.Unit) {
@@ -169,9 +202,18 @@ func (bot *bot) tactics() {
 
 	if waiting.Len() >= 6*bot.waveSize {
 		waiting.OrderPos(ability.Attack_Attack, bot.enemyStartLocation)
+		bot.waveSize++
 	}
 
-	targets := bot.getTargets()
+	targets := bot.Enemy.Ground().All().Choose(func(u botutil.Unit) bool {
+		switch u.UnitType {
+		case unit.Zerg_Larva, unit.Zerg_Egg, unit.Zerg_Broodling:
+			return false
+		default:
+			return true
+		}
+	})
+
 	if targets.Len() == 0 {
 		attacking.OrderPos(ability.Attack_Attack, bot.enemyStartLocation)
 		return
@@ -179,26 +221,13 @@ func (bot *bot) tactics() {
 
 	attacking.Each(func(ling botutil.Unit) {
 		target := targets.ClosestTo(ling.Pos2D())
+
 		if ling.Pos2D().Distance2(target.Pos2D()) > 4*4 {
 			// If target is far, attack it as unit, ling will run ignoring everything else
-			ling.OrderTarget(ability.Attack_Attack, target)
-		} else if target.UnitType == zerg.ChangelingZergling || target.UnitType == zerg.ChangelingZerglingWings {
-			// Must specificially attack changelings, attack move is not enough
 			ling.OrderTarget(ability.Attack_Attack, target)
 		} else {
 			// Attack as position, ling will choose best target around
 			ling.OrderPos(ability.Attack_Attack, target.Pos2D())
 		}
 	})
-}
-
-// Get the current target list, prioritizing good targets over ok targets
-func (bot *bot) getTargets() botutil.Units {
-	// Prioritize things that can fight back
-	if targets := bot.Enemy.Ground().CanAttack().All(); targets.Len() > 0 {
-		return targets
-	}
-
-	// Otherwise just kill all the buildings
-	return bot.Enemy.Ground().Structures().All()
 }
