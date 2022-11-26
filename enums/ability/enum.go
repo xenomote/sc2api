@@ -337,7 +337,7 @@ const (
 	Rally_Morphing_Unit                         api.AbilityID = 199
 	Rally_Nexus                                 api.AbilityID = 207
 	Rally_Units                                 api.AbilityID = 3673
-	Rally_Workers                               api.AbilityID = 3690
+	Rally_Workers                               api.AbilityID = 212
 	Research_AdaptiveTalons                     api.AbilityID = 3709
 	Research_AdeptResonatingGlaives             api.AbilityID = 1594
 	Research_AnabolicSynthesis                  api.AbilityID = 263

@@ -94,7 +94,7 @@ func (bot *bot) strategy() {
 	// Any more than 14 drones will delay the first round of lings (waiting for larva)
 	maxDrones := 14
 	if hatches > 1 {
-		maxDrones = hatches * 16 // but we can saturate later
+		maxDrones = hatches * 16
 	}
 
 	// Build drones to our cap
@@ -119,20 +119,15 @@ func (bot *bot) strategy() {
 }
 
 func (bot *bot) tactics() {
-	hatcheries := bot.Self[zerg.Hatchery]
+	hatcheries := bot.Self.All().IsTownHall()
 
 	if hatcheries.Len() > bot.hatcherycount {
 		bot.hatcherycount = hatcheries.Len()
 
 		building := hatcheries.Choose(func(u botutil.Unit) bool { return !u.IsBuilt() }).First()
-		log.Println(building.Pos2D())
-
 		target := bot.Neutral.Minerals().ClosestTo(building.Pos2D())
-		log.Println(target.Pos2D())
 
-		//todo not working for some reason??
 		hatcheries.OrderTarget(ability.Rally_Workers, target)
-
 		hatcheries.OrderPos(ability.Rally_Hatchery_Units, target.Pos2D())
 	}
 
