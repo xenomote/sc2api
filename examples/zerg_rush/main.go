@@ -21,7 +21,7 @@ func main() {
 	var player, opponent client.PlayerSetup
 	if *r == "" {
 		player = ai
-		opponent = client.NewComputer(api.Race_Random, api.Difficulty_MediumHard, api.AIBuild_Macro)
+		opponent = client.NewComputer(api.Race_Random, api.Difficulty_Harder, api.AIBuild_Macro)
 	} else {
 		rv, ok := api.Race_value[*r]
 		if !ok {
@@ -36,6 +36,6 @@ func main() {
 	}
 	
 
-	//runner.SetRealtime()
+	runner.SetRealtime()
 	runner.Run(runner.NewGameConfig(player, opponent))
 }

@@ -19,8 +19,10 @@ type bot struct {
 	myNaturalLocation  api.Point2D
 	enemyStartLocation api.Point2D
 
-	waveSize      int
-	hatcherycount int
+	waveSize int
+
+	hatcheryCount  int
+	harvesterCount int
 }
 
 func runAgent(info client.AgentInfo) {
@@ -28,7 +30,7 @@ func runAgent(info client.AgentInfo) {
 	bot.LogActionErrors()
 
 	bot.waveSize = 1
-	bot.hatcherycount = 1
+	bot.hatcheryCount = 1
 
 	bot.init()
 	for bot.IsInGame() {
@@ -119,16 +121,27 @@ func (bot *bot) strategy() {
 }
 
 func (bot *bot) tactics() {
-	hatcheries := bot.Self.All().IsTownHall()
+	hatcheries := bot.Self[zerg.Hatchery]
+	harvesters := bot.Self[zerg.Drone]
 
-	if hatcheries.Len() > bot.hatcherycount {
-		bot.hatcherycount = hatcheries.Len()
+	if harvesters.Len() > bot.harvesterCount {
+		bot.harvesterCount = harvesters.Len()
 
-		building := hatcheries.Choose(func(u botutil.Unit) bool { return !u.IsBuilt() }).First()
-		target := bot.Neutral.Minerals().ClosestTo(building.Pos2D())
+		for _, hatch := range hatcheries.Slice() {
+			if hatch.IsBuilt() && hatch.GetAssignedHarvesters() >= hatch.GetIdealHarvesters() {
+				continue
+			}
 
-		hatcheries.OrderTarget(ability.Rally_Workers, target)
-		hatcheries.OrderPos(ability.Rally_Hatchery_Units, target.Pos2D())
+			minerals := bot.Neutral.Minerals().ClosestTo(hatch.Pos2D())
+			hatcheries.OrderTarget(ability.Rally_Workers, minerals)
+		}
+	}
+
+	if hatcheries.Len() > bot.hatcheryCount {
+		bot.hatcheryCount = hatcheries.Len()
+
+		hatch := hatcheries.First()
+		hatcheries.OrderPos(ability.Rally_Hatchery_Units, hatch.Pos2D())
 	}
 
 	if bot.OpponentRace == api.Race_Terran {
