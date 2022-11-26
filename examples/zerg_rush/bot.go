@@ -19,12 +19,16 @@ type bot struct {
 	myNaturalLocation  api.Point2D
 	enemyStartLocation api.Point2D
 
-	wave int
+	waveSize      int
+	hatcherycount int
 }
 
 func runAgent(info client.AgentInfo) {
 	bot := bot{Bot: botutil.NewBot(info)}
 	bot.LogActionErrors()
+
+	bot.waveSize = 1
+	bot.hatcherycount = 1
 
 	bot.init()
 	for bot.IsInGame() {
@@ -42,7 +46,6 @@ func (bot *bot) init() {
 	// My hatchery is on start position
 	bot.myStartLocation = bot.Self[zerg.Hatchery].First().Pos2D()
 	bot.enemyStartLocation = *bot.GameInfo().GetStartRaw().GetStartLocations()[0]
-	bot.wave = 1
 
 	// Find natural location
 	expansions := search.CalculateBaseLocations(bot.Bot, false)
@@ -91,7 +94,7 @@ func (bot *bot) strategy() {
 	// Any more than 14 drones will delay the first round of lings (waiting for larva)
 	maxDrones := 14
 	if hatches > 1 {
-		maxDrones = 16 // but we can saturate later
+		maxDrones = hatches * 16 // but we can saturate later
 	}
 
 	// Build drones to our cap
@@ -116,13 +119,34 @@ func (bot *bot) strategy() {
 }
 
 func (bot *bot) tactics() {
-	// If a hatch needs an injection, find the closest queen with energy
-	bot.Self[zerg.Hatchery].IsBuilt().NoBuff(buff.QueenSpawnLarvaTimer).Each(func(u botutil.Unit) {
+	hatcheries := bot.Self[zerg.Hatchery]
+
+	if hatcheries.Len() > bot.hatcherycount {
+		bot.hatcherycount = hatcheries.Len()
+
+		building := hatcheries.Choose(func(u botutil.Unit) bool { return !u.IsBuilt() }).First()
+		log.Println(building.Pos2D())
+
+		target := bot.Neutral.Minerals().ClosestTo(building.Pos2D())
+		log.Println(target.Pos2D())
+
+		//todo not working for some reason??
+		hatcheries.OrderTarget(ability.Rally_Workers, target)
+
+		hatcheries.OrderPos(ability.Rally_Hatchery_Units, target.Pos2D())
+	}
+
+	if bot.OpponentRace == api.Race_Terran {
+		bot.waveSize = 3
+	}
+
+	hatcheries.IsBuilt().NoBuff(buff.QueenSpawnLarvaTimer).Each(func(u botutil.Unit) {
 		bot.Self[zerg.Queen].CanOrder(ability.Effect_InjectLarva).ClosestTo(u.Pos2D()).OrderTarget(ability.Effect_InjectLarva, u)
 	})
 
 	lings := bot.Self[zerg.Zergling]
-	waiting, attacking := lings.Partition(func(u botutil.Unit) bool {
+
+	preparing, attacking := lings.Partition(func(u botutil.Unit) bool {
 		for _, order := range u.Orders {
 			if order.AbilityId == ability.Attack_Attack {
 				return false
@@ -131,14 +155,17 @@ func (bot *bot) tactics() {
 		return true
 	})
 
-	if waiting.Len() > bot.wave * 6 {
-		waiting.Each(func(u botutil.Unit) {u.OrderPos(ability.Attack, bot.enemyStartLocation)})
-		bot.wave++
+	waiting, _ := preparing.Partition(func(u botutil.Unit) bool {
+		return len(u.Orders) == 0
+	})
+
+	if waiting.Len() >= 6*bot.waveSize {
+		waiting.OrderPos(ability.Attack_Attack, bot.enemyStartLocation)
 	}
 
 	targets := bot.getTargets()
 	if targets.Len() == 0 {
-		attacking.OrderPos(ability.Attack, bot.enemyStartLocation)
+		attacking.OrderPos(ability.Attack_Attack, bot.enemyStartLocation)
 		return
 	}
 
@@ -146,13 +173,13 @@ func (bot *bot) tactics() {
 		target := targets.ClosestTo(ling.Pos2D())
 		if ling.Pos2D().Distance2(target.Pos2D()) > 4*4 {
 			// If target is far, attack it as unit, ling will run ignoring everything else
-			ling.OrderTarget(ability.Attack, target)
+			ling.OrderTarget(ability.Attack_Attack, target)
 		} else if target.UnitType == zerg.ChangelingZergling || target.UnitType == zerg.ChangelingZerglingWings {
 			// Must specificially attack changelings, attack move is not enough
-			ling.OrderTarget(ability.Attack, target)
+			ling.OrderTarget(ability.Attack_Attack, target)
 		} else {
 			// Attack as position, ling will choose best target around
-			ling.OrderPos(ability.Attack, target.Pos2D())
+			ling.OrderPos(ability.Attack_Attack, target.Pos2D())
 		}
 	})
 }
